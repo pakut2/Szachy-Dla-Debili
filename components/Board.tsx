@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useState } from "react";
+import React, { FC, Fragment, useCallback, useState } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import { Text, Button, IconButton } from "react-native-paper";
 import { Chess } from "chess.js";
@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const Board = () => {
+const Board: FC = () => {
   const chess = useConst(() => new Chess());
 
   const [state, setState] = useState({
@@ -25,6 +25,8 @@ const Board = () => {
   });
 
   const [moves, setMoves] = useState(Math.floor(Math.random() * 6) + 1);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [enabled, setEnabled] = useState(false);
 
   const swapTurn = (color: string) => {
     let tokens = chess.fen().split(" ");
@@ -49,28 +51,38 @@ const Board = () => {
         board: chess.board(),
       });
 
-      setMoves(Math.floor(Math.random() * 6) + 1);
+      setEnabled(false);
+      setButtonDisabled(false);
     }
   }, [chess, state.player, moves]);
 
-  //* Normal Chess
-  // const onTurn = useCallback(() => {
-  //   setState({
-  //     player: state.player === "w" ? "b" : "w",
-  //     board: chess.board(),
-  //   });
-  // }, [chess, state.player]);
+  const [game, setGame] = useState("");
 
-  // const randomHandler = () => {
-  //   setEnabled(true);
+  const gameOver = () => {
+    setGame("Game Over");
+  };
 
-  //   setMoves(Math.floor(Math.random() * 6) + 1);
-  // };
+  const randomHandler = () => {
+    setMoves(Math.floor(Math.random() * 6) + 1);
+    setButtonDisabled(true);
+    setEnabled(true);
+  };
 
   return (
     <Fragment>
-      <Text style={{ color: "#fff" }}>{moves}</Text>
-      <Text style={{ color: "#fff" }}>{chess.fen()}</Text>
+      <IconButton
+        icon={`dice-${moves}`}
+        size={50}
+        color="#fff"
+        style={{
+          flexDirection: "row",
+          alignSelf: "center",
+          transform: [{ rotate: "180deg" }],
+        }}
+        disabled={state.player === "w" || buttonDisabled}
+        onPress={randomHandler}
+      />
+      <Text style={{ color: "#fff" }}>{game}</Text>
       <View style={styles.container}>
         <Background />
         {state.board.map((row, x) =>
@@ -85,7 +97,9 @@ const Board = () => {
                   postition={{ x: y * SIZE, y: x * SIZE }}
                   chess={chess}
                   onTurn={onTurn}
-                  enabled={state.player === square.color}
+                  gameOver={gameOver}
+                  enabled={enabled && state.player === square.color}
+                  rotate={state.player === "b"}
                 />
               );
             }
@@ -93,14 +107,21 @@ const Board = () => {
         )}
       </View>
       <IconButton
-        icon="dice-multiple"
+        icon={`dice-${moves}`}
         size={50}
         color="#fff"
         style={{ flexDirection: "row", alignSelf: "center" }}
-        disabled
+        disabled={state.player === "b" || buttonDisabled}
+        onPress={randomHandler}
       />
     </Fragment>
   );
 };
 
 export default Board;
+
+// TODO
+//* Win condition - stalemate
+//* Move timer
+//? Websockets
+//! Underline fix

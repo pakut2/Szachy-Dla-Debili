@@ -1,10 +1,13 @@
-import React from "react";
+import React, { FC } from "react";
 import { Text, View } from "react-native";
 
 const WHITE = "rgb(181, 136, 99)";
 const BLACK = "rgb(240, 217, 181)";
 
-interface RowProps {
+interface BaseProps {
+  white: boolean;
+}
+interface RowProps extends BaseProps {
   row: number;
 }
 
@@ -12,12 +15,11 @@ interface SquareProps extends RowProps {
   col: number;
 }
 
-const Square = ({ row, col }: SquareProps) => {
-  const offset = row % 2 === 0 ? 1 : 0;
-  const backgroundColor = (col + offset) % 2 === 0 ? WHITE : BLACK;
+const Square = ({ row, col, white }: SquareProps) => {
+  const backgroundColor = white ? WHITE : BLACK;
   const textStyle = {
     fontWeight: "500" as const,
-    color: (col + offset) % 2 === 0 ? BLACK : WHITE,
+    color: white ? BLACK : WHITE,
   };
 
   return (
@@ -55,11 +57,18 @@ const Square = ({ row, col }: SquareProps) => {
   );
 };
 
-const Row = ({ row }: RowProps) => {
+const Row = ({ row, white }: RowProps) => {
+  const offset = white ? 0 : 1;
+
   return (
     <View style={{ flex: 1, flexDirection: "row" }}>
-      {new Array(8).fill(0).map((_, col) => (
-        <Square key={col} row={row} col={col} />
+      {new Array(8).fill(0).map((value, col) => (
+        <Square
+          key={col}
+          row={row}
+          col={col}
+          white={(col + offset) % 2 === 1}
+        />
       ))}
     </View>
   );
@@ -68,8 +77,8 @@ const Row = ({ row }: RowProps) => {
 const Background = () => {
   return (
     <View style={{ flex: 1 }}>
-      {new Array(8).fill(0).map((_, row) => (
-        <Row key={row} row={row}></Row>
+      {new Array(8).fill(0).map((value, row) => (
+        <Row key={row} white={row % 2 === 0} row={row}></Row>
       ))}
     </View>
   );

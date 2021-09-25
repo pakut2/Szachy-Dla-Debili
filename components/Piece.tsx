@@ -19,6 +19,9 @@ const styles = StyleSheet.create({
     width: SIZE,
     height: SIZE,
   },
+  rotate: {
+    transform: [{ rotate: "180deg" }],
+  },
 });
 
 interface PieceProps {
@@ -26,10 +29,20 @@ interface PieceProps {
   postition: Vector;
   chess: ChessInstance;
   onTurn: () => void;
+  gameOver: () => void;
   enabled: boolean;
+  rotate: boolean;
 }
 
-const Piece = ({ id, postition, chess, onTurn, enabled }: PieceProps) => {
+const Piece = ({
+  id,
+  postition,
+  chess,
+  onTurn,
+  gameOver,
+  enabled,
+  rotate,
+}: PieceProps) => {
   const isGestureActive = useSharedValue(false);
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
@@ -52,6 +65,8 @@ const Piece = ({ id, postition, chess, onTurn, enabled }: PieceProps) => {
       if (move) {
         chess.move(move);
         onTurn();
+      } else {
+        gameOver();
       }
     },
     [chess, isGestureActive, offsetX, offsetY, onTurn, translateX, translateY]
@@ -86,27 +101,26 @@ const Piece = ({ id, postition, chess, onTurn, enabled }: PieceProps) => {
   }));
 
   const to = useAnimatedStyle(() => ({
-    backgroundColor: "rgba(255, 255, 0, 0.5)",
+    backgroundColor: isGestureActive.value
+      ? "rgba(255, 255, 0, 0.5)"
+      : "transparent",
     position: "absolute",
-    opacity: isGestureActive.value ? 1 : 0,
-    zIndex: isGestureActive.value ? 100 : 0,
+    zIndex: 0,
     width: SIZE,
     height: SIZE,
     transform: [{ translateX: offsetX.value }, { translateY: offsetY.value }],
   }));
 
   const from = useAnimatedStyle(() => {
-    const translation = toTranslation(
-      toPosition({
-        x: translateX.value,
-        y: translateY.value,
-      })
-    );
+    const position = toPosition({ x: translateX.value, y: translateY.value });
+    const translation = toTranslation(position);
+
     return {
-      backgroundColor: "rgba(255, 255, 0, 0.5)",
+      backgroundColor: isGestureActive.value
+        ? "rgba(255, 255, 0, 0.5)"
+        : "transparent",
       position: "absolute",
-      opacity: isGestureActive.value ? 1 : 0,
-      zIndex: isGestureActive.value ? 100 : 0,
+      zIndex: 0,
       width: SIZE,
       height: SIZE,
       transform: [{ translateX: translation.x }, { translateY: translation.y }],
@@ -119,7 +133,10 @@ const Piece = ({ id, postition, chess, onTurn, enabled }: PieceProps) => {
       <Animated.View style={from} />
       <PanGestureHandler onGestureEvent={onGestureEvent} enabled={enabled}>
         <Animated.View style={piece}>
-          <Image source={PIECES[id]} style={styles.piece} />
+          <Image
+            source={PIECES[id]}
+            style={[styles.piece, rotate && styles.rotate]}
+          />
         </Animated.View>
       </PanGestureHandler>
     </Fragment>
