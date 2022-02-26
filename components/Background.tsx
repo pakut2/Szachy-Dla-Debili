@@ -62,7 +62,7 @@ const Row = ({ row, white }: RowProps) => {
 
   return (
     <View style={{ flex: 1, flexDirection: "row" }}>
-      {new Array(8).fill(0).map((value, col) => (
+      {new Array(8).fill(0).map((_, col) => (
         <Square
           key={col}
           row={row}
@@ -77,7 +77,7 @@ const Row = ({ row, white }: RowProps) => {
 const Background = () => {
   return (
     <View style={{ flex: 1 }}>
-      {new Array(8).fill(0).map((value, row) => (
+      {new Array(8).fill(0).map((_, row) => (
         <Row key={row} white={row % 2 === 0} row={row}></Row>
       ))}
     </View>
